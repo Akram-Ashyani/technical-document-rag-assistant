@@ -2,6 +2,7 @@
 __pycache__/
 *.py[codz]
 *$py.class
+*.pyc
 
 # C extensions
 *.so
@@ -213,6 +214,10 @@ tempCodeRunnerFile.py
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Project data / local documents
+*.pdf
+data/vector_store/
 
 # Streamlit
 .streamlit/secrets.toml
