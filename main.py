@@ -1,6 +1,6 @@
 from src.document_loader import load_document
 from src.text_chunker import chunk_pdf_pages
-from src.embeddings import load_embedding_model
+from src.embeddings import load_embedding_model, create_embeddings
 from src.retriever import retrieve_top_chunks
 
 DOC_PATH = "data/sample_documents/raspberry_pi_pico_with_datasheet.pdf"
@@ -14,6 +14,9 @@ if __name__ == "__main__":
 
     model = load_embedding_model()
 
+    chunk_texts = [chunk["text"] for chunk in chunks]
+    chunk_embeddings = create_embeddings(chunk_texts, model)
+
     test_questions = [
         "What is the keep-out area for the antenna?",
         "What chip is used in Raspberry Pi Pico W?",
@@ -23,7 +26,7 @@ if __name__ == "__main__":
     ]
 
     for question in test_questions:
-        results = retrieve_top_chunks(question, chunks, model, top_k=3)
+        results = retrieve_top_chunks(question, chunks, chunk_embeddings, model, top_k=3)
 
         print("\n==================================================")
         print("\nQuestion:", question)

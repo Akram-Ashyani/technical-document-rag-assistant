@@ -1,5 +1,4 @@
 import numpy as np
-from src.embeddings import create_embeddings
 
 def cosine_similarity(query_embedding, document_embeddings):
     """
@@ -16,13 +15,11 @@ def cosine_similarity(query_embedding, document_embeddings):
 
     return np.dot(query_embedding, document_embeddings.T) / (query_norm * document_norms)
 
-def retrieve_top_chunks(question: str, chunks: list[dict], model, top_k: int = 3) -> list[dict]:
+def retrieve_top_chunks(question: str, chunks: list[dict], chunk_embeddings, model, top_k: int = 3) -> list[dict]:
     """
     Retrieve the top K chunks that are most similar to the question.
     """
-    chunk_texts = [chunk["text"] for chunk in chunks]
 
-    chunk_embeddings = create_embeddings(chunk_texts, model)
     question_embedding = model.encode(question, convert_to_numpy=True)
 
     similarities = cosine_similarity(question_embedding, chunk_embeddings)
