@@ -26,15 +26,13 @@ if __name__ == "__main__":
         print("Number of pages:", len(pages))
     print("Number of chunks:", len(chunks))
 
-    test_questions = [
-        "What is the keep-out area for the antenna?",
-        "What chip is used in Raspberry Pi Pico W?",
-        "How can Raspberry Pi Pico W be powered?",
-        "What are the recommended operating conditions?",
-        "How much flash memory does Raspberry Pi Pico W have?"
-    ]
+    while True:
+        question = input("\nAsk a question about the document, or type 'exit' to quit: ")
 
-    for question in test_questions:
+        if question.lower() == "exit":
+            print("Goodbye.")
+            break
+
         results = retrieve_top_chunks(question, chunks, chunk_embeddings, model, top_k=3)
 
         print("\n==================================================")
