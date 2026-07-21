@@ -38,6 +38,10 @@ if __name__ == "__main__":
         print("\n==================================================")
         print("\nQuestion:", question)
 
+        if results[0]["score"] < 0.5:
+            print("\nNo relevant chunks found.")
+            continue
+
         for result in results:
             print("\n--------------------")
             print("Chunk ID:", result["chunk_id"])
