@@ -217,7 +217,7 @@ __marimo__/
 
 # Project data / local documents
 *.pdf
-data/vector_store/
+data/
 
 # Streamlit
 .streamlit/secrets.toml
