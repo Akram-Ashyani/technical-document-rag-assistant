@@ -3,6 +3,7 @@ from src.text_chunker import chunk_pdf_pages
 from src.embeddings import (load_embedding_model, create_embeddings, 
                             save_embeddings, load_embeddings, embeddings_exist)
 from src.retriever import retrieve_top_chunks
+from src.answer_generator import generate_answer
 
 DOC_PATH = "data/sample_documents/raspberry_pi_pico_with_datasheet.pdf"
 EMBEDDING_STORE_DIR = "data/embedding_store"
@@ -42,9 +43,10 @@ if __name__ == "__main__":
             print("\nNo relevant chunks found.")
             continue
 
+        answer = generate_answer(question, results)
+        print(f"\nAnswer:\n{answer}")
+
+        print("\n==================================================")
+        print("\nRetrieved Chunks:")
         for result in results:
-            print("\n--------------------")
-            print("Chunk ID:", result["chunk_id"])
-            print("Page:", result["page_number"])
-            print("Score:", result["score"])
-            print(result["text"][:1000])
+            print(f"- Page {result['page_number']}, Chunk {result['chunk_id']}, score: {result['score']:.3f}")
