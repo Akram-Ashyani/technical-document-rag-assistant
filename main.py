@@ -5,8 +5,10 @@ from src.embeddings import (load_embedding_model, create_embeddings,
 from src.retriever import retrieve_top_chunks
 from src.answer_generator import generate_answer
 
-DOC_PATH = "data/sample_documents/raspberry_pi_pico_with_datasheet.pdf"
-EMBEDDING_STORE_DIR = "data/embedding_store"
+DOC_PATH = "data/sample_documents/raspberry_pi_pico_with_datasheet.pdf" # document to use
+EMBEDDING_STORE_DIR = "data/embedding_store" # where to store chunks and embeddings
+ANSWER_MODE = "ollama" # basic/ollama
+SIMILARITY_THRESHOLD = 0.4 # minimum cosine similarity score required to proceed
 
 if __name__ == "__main__":
 
@@ -39,11 +41,11 @@ if __name__ == "__main__":
         print("\n==================================================")
         print("\nQuestion:", question)
 
-        if results[0]["score"] < 0.5:
+        if results[0]["score"] < SIMILARITY_THRESHOLD:
             print("\nNo relevant chunks found.")
             continue
 
-        answer = generate_answer(question, results)
+        answer = generate_answer(question, results, mode=ANSWER_MODE)
         print(f"\nAnswer:\n{answer}")
 
         print("\n==================================================")
