@@ -4,6 +4,7 @@ from src.embeddings import (load_embedding_model, create_embeddings,
                             save_embeddings, load_embeddings, embeddings_exist)
 from src.retriever import retrieve_top_chunks
 from src.answer_generator import generate_answer
+from src.reranker import load_reranker, rerank_chunks
 
 DOC_PATH = "data/sample_documents/raspberry_pi_pico_with_datasheet.pdf" # document to use
 EMBEDDING_STORE_DIR = "data/embedding_store" # where to store chunks and embeddings
@@ -13,6 +14,7 @@ SIMILARITY_THRESHOLD = 0.4 # minimum cosine similarity score required to proceed
 if __name__ == "__main__":
 
     model = load_embedding_model()
+    reranker = load_reranker()
 
     if embeddings_exist(EMBEDDING_STORE_DIR):
         print("Embeddings already exist. Skipping embedding creation.")
@@ -21,6 +23,7 @@ if __name__ == "__main__":
         print("Creating embeddings...")
         pages = load_document(DOC_PATH)
         chunks = chunk_pdf_pages(pages)
+        # chunks = filter_noisy_chunks(chunks)
 
         chunk_texts = [chunk["text"] for chunk in chunks]
         chunk_embeddings = create_embeddings(chunk_texts, model)
@@ -36,7 +39,8 @@ if __name__ == "__main__":
             print("Goodbye.")
             break
 
-        results = retrieve_top_chunks(question, chunks, chunk_embeddings, model, top_k=3)
+        results = retrieve_top_chunks(question, chunks, chunk_embeddings, model, top_k=10)
+        results = rerank_chunks(question, results, reranker, top_k=3)
 
         print("\n==================================================")
         print("\nQuestion:", question)
@@ -51,4 +55,6 @@ if __name__ == "__main__":
         print("\n==================================================")
         print("\nRetrieved Chunks:")
         for result in results:
-            print(f"- Page {result['page_number']}, Chunk {result['chunk_id']}, score: {result['score']:.3f}")
+            print(f"- Page {result['page_number']}, Chunk {result['chunk_id']}, "
+                  f"Cosine score: {result['score']:.3f}, "
+                  f"Rerank score: {result['rerank_score']:.3f}")
