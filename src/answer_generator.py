@@ -30,50 +30,67 @@ def generate_basic_answer(question: str, retrieved_chunks: list[dict]) -> str:
 
     return answer
 
+
 def generate_ollama_answer(question: str, retrieved_chunks: list[dict],
                            model_name: str = "llama3.2") -> str:
     """
     Generate an answer using a local Ollama model.
-     
+    Add retrieved source references using Python.
     """
     if not retrieved_chunks:
         return "No relevant chunks found."
-    
+
     context = build_context(retrieved_chunks)
+    print("\n========== CONTEXT SENT TO OLLAMA ==========")
+    print(context)
+    print("============================================\n")
 
     prompt = f"""
-    You are a careful technical document question-answering assistant.
+        You are a technical document question-answering assistant.
 
-    You must answer ONLY using the provided context.
-    Do not use outside knowledge.
-    Do not guess.
-    Do not invent numbers, units, page numbers, or chunk IDs.
+        Answer the user's question using only the provided document context.
 
-    If the answer is not clearly present in the context, respond exactly:
-    I could not find this information in the document.
+        Instructions:
+        - Identify the information in the context that is relevant to the question.
+        - Base your answer on explicit evidence from the context.
+        - Preserve numerical values, units, names, and technical specifications exactly.
+        - You may combine information from multiple relevant excerpts.
+        - Do not ignore relevant information simply because it describes
+        a component, subsection, or feature of the subject.
+        - If the question is ambiguous, explain the relevant distinctions
+        supported by the context.
+        - If the context partially answers the question, provide the available
+        information and state what is missing.
+        - If the context does not support an answer, say:
+        I could not find this information in the provided context.
+        - Do not use outside knowledge or invent missing information.
+        - Do not include source references, page numbers, or chunk IDs.
+        - Do not repeat the question.
+        - Keep your answer concise.
 
-    When you answer, use this format:
+        Context:
+        {context}
 
-    Answer:
-    <short answer>
+        Question:
+        {question}
 
-    Sources:
-    - page <page_number>, chunk <chunk_id>
-
-    Question:
-    {question}
-
-    Context:
-    {context}
-    """
+        Answer:
+        """
 
     response = requests.post("http://localhost:11434/api/generate",
-                             json={"model": model_name, "prompt": prompt, "stream": False,},
-                             timeout=120,)
-    
+                             json={"model": model_name, "prompt": prompt, "stream": False,
+                                   "options": {"temperature": 0}}, timeout=120)
+
     response.raise_for_status()
 
-    return response.json()["response"]
+    answer_text = response.json()["response"].strip()
+
+    sources = "\n".join(
+        f"- page {chunk['page_number']}, chunk {chunk['chunk_id']}"
+        for chunk in retrieved_chunks
+    )
+
+    return f"{answer_text}\n\nRetrieved sources:\n{sources}"
 
 def generate_answer(question: str, retrieved_chunks: list[dict], mode: str = "basic") -> str:
     """
